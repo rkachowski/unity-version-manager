@@ -1,27 +1,30 @@
-UNITY_LINK=/Applications/Unity
-UNITY_PATH=/Applications/Unity/Unity.app/Contents/MacOS/Unity
-UNITY_INSTALL_LOCATION=/Applications
-UVM_VERSION=0.0.1
+readonly UNITY_LINK=/Applications/Unity
+readonly UNITY_PATH=/Applications/Unity/Unity.app/Contents/MacOS/Unity
+readonly UNITY_INSTALL_LOCATION=/Applications
+readonly UVM_VERSION=0.0.1
+readonly UVM_WEBPAGE="https://github.com/rkachowski/unity-version-manager/"
 
 function join { local IFS="$1"; shift; echo "$*";  }
 
-uvm ()
+function uvm ()
 {
     uvm_print_header
     uvm_list_available_versions
 }
 
-uvm_print_header()
+function uvm_print_header()
 {
-    echo "Unity Version Manager - v$UVM_VERSION"
+    echo "= Unity Version Manager - v$UVM_VERSION"
+    echo ""
+    echo " * $UVM_WEBPAGE"
     echo ""
 
 }
-uvm_current_unity_version()
+function uvm_current_unity_version()
 {
     local plist_path="${UNITY_PATH%MacOS/Unity}Info.plist"
     if [[ -f "$plist_path" ]]; then
-        local VERSION=`/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' $plist_path`
+        local VERSION=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' $plist_path)
         echo $VERSION
     else
         echo "No unity version detected"
@@ -29,12 +32,12 @@ uvm_current_unity_version()
     fi
 }
 
-uvm_use_version()
+function uvm_use_version()
 {
     local desired_version="$1"
     local desired_version_path="$UNITY_INSTALL_LOCATION/Unity$desired_version" 
-    if [[ ! -d $desired_version_path ]]
-    then
+
+    if [[ ! -d $desired_version_path ]]; then
         echo "Version $desired_version isn't installed"
         echo "Available versions are - "
         uvm_list_available_versions
@@ -45,9 +48,8 @@ uvm_use_version()
         fi
 
         #link exists
-        if [[ -h "$UNITY_LINK" ]]
-        then
-            echo "Switching from `uvm_current_unity_version` to $desired_version..."
+        if [[ -h "$UNITY_LINK" ]]; then
+            echo "Switching from $(uvm_current_unity_version) to $desired_version..."
             rm "$UNITY_LINK"
             ln -s "$desired_version_path" "$UNITY_LINK"
         fi
@@ -59,12 +61,11 @@ uvm_use_version()
     fi
 }
 
-uvm_list_available_versions()
+function uvm_list_available_versions()
 {
-    local current_version=`uvm_current_unity_version`
+    local current_version=$(uvm_current_unity_version)
     echo "LOCAL:"
-    for version in `uvm_list_local_versions`
-    do
+    for version in $(uvm_list_local_versions); do
         if [[ "$version" == "${current_version%f*}" ]]
         then
             echo "  $version [active]"
@@ -74,12 +75,11 @@ uvm_list_available_versions()
     done
 }
 
-uvm_list_local_versions()
+function uvm_list_local_versions()
 {
     local -a version_numbers=()
 
-    for version in `find $UNITY_INSTALL_LOCATION -name "Unity*" -type d -maxdepth 1`
-    do
+    for version in $(find $UNITY_INSTALL_LOCATION -name "Unity*" -type d -maxdepth 1); do
         local version_number="${version#*Unity}"
         version_numbers+=($version_number)
     done
