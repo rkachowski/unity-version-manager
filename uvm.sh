@@ -1,15 +1,24 @@
 readonly UNITY_LINK=/Applications/Unity
 readonly UNITY_PATH=/Applications/Unity/Unity.app/Contents/MacOS/Unity
 readonly UNITY_INSTALL_LOCATION=/Applications
-readonly UVM_VERSION=0.0.1
+readonly UVM_VERSION=0.0.2
 readonly UVM_WEBPAGE="https://github.com/rkachowski/unity-version-manager/"
 
 function join { local IFS="$1"; shift; echo "$*";  }
 
-function uvm ()
+function uvm_help ()
 {
     uvm_print_header
-    uvm_list_available_versions
+    uvm_print_help
+}
+
+function uvm_print_help ()
+{
+    echo "help - show this help"
+    echo "use <version> - use a specific unity version "
+    echo "list - list unity versions available"
+    echo "current - list the current unity version"
+    echo ""
 }
 
 function uvm_print_header()
@@ -35,7 +44,7 @@ function uvm_current_unity_version()
 function uvm_use_version()
 {
     local desired_version="$1"
-    local desired_version_path="$UNITY_INSTALL_LOCATION/Unity$desired_version" 
+    local desired_version_path="$UNITY_INSTALL_LOCATION/Unity$desired_version"
 
     if [[ ! -d $desired_version_path ]]; then
         echo "Version $desired_version isn't installed"
@@ -87,4 +96,52 @@ function uvm_list_local_versions()
     echo ${version_numbers[*]}
 }
 
+
+#argument parsing
+while [[ $# > 0  ]]
+do
+    key="$1"
+    case $key in
+        help)
+            uvm_help
+            shift # past argument
+            exit 0
+            ;;
+        use)
+            to_use="$2"
+            if [[ ! ${#to_use} -gt 4 ]]; then
+                echo "Invalid version '$to_use'"
+                echo "Please enter a version in the format 'X.X.X'"
+                echo ""
+                exit -2
+            fi
+
+            uvm_use_version "$2"
+            exit 0
+            ;;
+        list)
+            uvm_print_header
+            uvm_list_available_versions
+            exit 0
+            ;;
+        current)
+            uvm_print_header
+            echo "Active: "$(uvm_current_unity_version)
+            exit 0
+            ;;
+        *) # unknown option
+            uvm_help
+            echo ""
+            echo "Unknown option '$key'"
+            echo ""
+            exit -1
+            ;;
+    esac
+    shift
+done
+
+#no arguments passed
+if [[ $# -eq 0 ]]; then
+    uvm_help
+fi
 
