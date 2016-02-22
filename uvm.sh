@@ -2,7 +2,7 @@ readonly UNITY_LINK=/Applications/Unity
 readonly UNITY_PATH=/Applications/Unity/Unity.app/Contents/MacOS/Unity
 readonly UNITY_INSTALL_LOCATION=/Applications
 readonly UVM_VERSION=0.0.2
-readonly UVM_WEBPAGE="https://github.com/rkachowski/unity-version-manager/"
+readonly UVM_WEBPAGE="https://github.com/wooga/unity-version-manager/"
 
 function join { local IFS="$1"; shift; echo "$*";  }
 
