@@ -18,6 +18,7 @@ function uvm_print_help ()
     echo "use <version> - use a specific unity version "
     echo "list - list unity versions available"
     echo "current - list the current unity version"
+    echo "detect - detect unity version used by project in current dir"
     echo ""
 }
 
@@ -96,6 +97,22 @@ function uvm_list_local_versions()
     echo ${version_numbers[*]}
 }
 
+function uvm_detect_project_version()
+{
+    local version="$(find . -name ProjectVersion.txt | xargs cat | grep EditorVersion)"
+    local regex='m_EditorVersion: (.*)'
+
+    if [[ "$version" =~ $regex ]]; then
+        echo ${BASH_REMATCH[1]}
+    else
+        echo "Couldn't detect project version"
+    fi
+}
+
+if [[ "${BASH_SOURCE[0]}" != "${0}"  ]]; then
+    #script is being sourced, not executed
+    return
+fi
 
 #argument parsing
 while [[ $# > 0  ]]
@@ -122,6 +139,10 @@ do
         list)
             uvm_print_header
             uvm_list_available_versions
+            exit 0
+            ;;
+        detect)
+            uvm_detect_project_version
             exit 0
             ;;
         current)
